@@ -71,18 +71,18 @@
     </select>
 
     <input type="hidden" name="filename" id="filename" />
-
     <input type="submit" value="Checkout" />
   </form>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
   <script>
     const fileInput = document.getElementById('file-input');
     const viewer = document.getElementById('viewer');
     const filenameField = document.getElementById('filename');
 
-    let scene, camera, renderer;
+    let scene, camera, renderer, controls;
 
     const initViewer = () => {
       scene = new THREE.Scene();
@@ -92,18 +92,19 @@
       viewer.innerHTML = '';
       viewer.appendChild(renderer.domElement);
 
-      camera.position.z = 100;
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      camera.position.set(0, 0, 100);
+      controls.update();
 
-      const light1 = new THREE.DirectionalLight(0xffffff);
-      light1.position.set(0, 0, 1).normalize();
-      scene.add(light1);
-
-      const ambientLight = new THREE.AmbientLight(0x404040);
-      scene.add(ambientLight);
+      scene.add(new THREE.AmbientLight(0x404040));
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(0, 0, 1).normalize();
+      scene.add(directionalLight);
     };
 
     const animate = () => {
       requestAnimationFrame(animate);
+      controls.update();
       renderer.render(scene, camera);
     };
 
@@ -122,10 +123,17 @@
         const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
         const mesh = new THREE.Mesh(geometry, material);
 
+        // Center and scale
         geometry.computeBoundingBox();
         const center = new THREE.Vector3();
         geometry.boundingBox.getCenter(center);
         mesh.position.sub(center);
+
+        const size = new THREE.Vector3();
+        geometry.boundingBox.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scaleFactor = 80 / maxDim;
+        mesh.scale.setScalar(scaleFactor);
 
         scene.add(mesh);
         animate();
