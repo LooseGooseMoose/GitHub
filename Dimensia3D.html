@@ -13,6 +13,15 @@
       flex-direction: column;
       align-items: center;
     }
+    #version {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: black;
+      color: white;
+      padding: 5px 10px;
+      font-weight: bold;
+    }
     #upload-label {
       background-color: #555;
       color: white;
@@ -30,7 +39,7 @@
     #viewer {
       width: 400px;
       height: 400px;
-      background: white;
+      background: #ddd;
       border: 1px solid #ccc;
       margin-bottom: 20px;
     }
@@ -50,22 +59,11 @@
       border: none;
       cursor: pointer;
     }
-    #version {
-      position: fixed;
-      top: 5px;
-      left: 10px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 14px;
-      z-index: 1000;
-    }
   </style>
 </head>
 <body>
 
-  <div id="version">Version: 1</div>
+  <div id="version">Version 1</div>
 
   <label id="upload-label" for="file-input">Upload File</label>
   <input type="file" id="file-input" accept=".stl" />
@@ -88,16 +86,17 @@
     <input type="submit" value="Checkout" />
   </form>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
+
   <script>
     const fileInput = document.getElementById('file-input');
     const viewer = document.getElementById('viewer');
     const filenameField = document.getElementById('filename');
 
-    let scene, camera, renderer;
+    let scene, camera, renderer, controls;
 
-    const initViewer = () => {
+    function initViewer() {
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, viewer.clientWidth / viewer.clientHeight, 0.1, 1000);
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -105,20 +104,20 @@
       viewer.innerHTML = '';
       viewer.appendChild(renderer.domElement);
 
-      camera.position.z = 100;
+      camera.position.set(0, 0, 100);
 
-      const light1 = new THREE.DirectionalLight(0xffffff);
-      light1.position.set(0, 0, 1).normalize();
-      scene.add(light1);
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(0, 0, 1);
+      scene.add(light);
 
       const ambientLight = new THREE.AmbientLight(0x404040);
       scene.add(ambientLight);
-    };
+    }
 
-    const animate = () => {
+    function animate() {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
-    };
+    }
 
     fileInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
@@ -130,18 +129,30 @@
       reader.onload = function (e) {
         initViewer();
 
-        const loader = new THREE.STLLoader();
-        const geometry = loader.parse(e.target.result);
-        const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
-        const mesh = new THREE.Mesh(geometry, material);
+        try {
+          const loader = new THREE.STLLoader();
+          const geometry = loader.parse(e.target.result);
+          const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
+          const mesh = new THREE.Mesh(geometry, material);
 
-        geometry.computeBoundingBox();
-        const center = new THREE.Vector3();
-        geometry.boundingBox.getCenter(center);
-        mesh.position.sub(center);
+          geometry.computeBoundingBox();
+          const center = new THREE.Vector3();
+          geometry.boundingBox.getCenter(center);
+          mesh.position.sub(center); // Center the model
 
-        scene.add(mesh);
-        animate();
+          // Scale to fit if necessary
+          const size = new THREE.Vector3();
+          geometry.boundingBox.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 80 / maxDim;
+          mesh.scale.set(scale, scale, scale);
+
+          scene.add(mesh);
+          animate();
+        } catch (err) {
+          alert("Failed to load STL file. Please make sure it's valid.");
+          console.error(err);
+        }
       };
       reader.readAsArrayBuffer(file);
     });
