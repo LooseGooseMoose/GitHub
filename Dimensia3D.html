@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>3D Print Order</title>
   <style>
     body {
@@ -55,7 +55,7 @@
 <body>
 
   <label id="upload-label" for="file-input">Upload File</label>
-  <input type="file" id="file-input" accept=".stl,.obj,.3mf" />
+  <input type="file" id="file-input" accept=".stl" />
 
   <div id="viewer"></div>
 
@@ -82,7 +82,7 @@
     const viewer = document.getElementById('viewer');
     const filenameField = document.getElementById('filename');
 
-    let scene, camera, renderer, controls;
+    let scene, camera, renderer;
 
     const initViewer = () => {
       scene = new THREE.Scene();
