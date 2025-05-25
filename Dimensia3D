@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload File</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+    .header {
+      background-color: #666;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .container {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+    }
+    .box {
+      background-color: #ddd;
+      padding: 20px;
+      width: 30%;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    .full-width {
+      width: 60%;
+    }
+    .file-preview {
+      width: 100%;
+      height: 200px;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #999;
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">Upload File</div>
+
+  <div class="container">
+    <div class="box full-width">
+      <p>*picture of the 3D file here. It should support any 3D file that can be converted into a .stl</p>
+      <input type="file" id="fileInput" accept=".stl,.obj,.3mf">
+      <div class="file-preview" id="filePreview">No file selected</div>
+    </div>
+
+    <div class="box">
+      <p>Menu here with a display that allows the user to scale the item and change material. Pricing will be adjusted based off the scale. (no more than 220 mm long and wide. No more than 250mm tall)</p>
+      <label>Scale (1-100%): <input type="number" id="scaleInput" value="100" min="1" max="100">%</label><br><br>
+      <label>Material:
+        <select id="materialSelect">
+          <option value="PLA">PLA</option>
+          <option value="ABS">ABS</option>
+          <option value="PETG">PETG</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="box">
+      <p>Button to checkout. An Email Should be sent to <br><strong>theduckfrankie@gmail.com</strong></p>
+      <button onclick="checkout()">Checkout</button>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      filePreview.textContent = file ? file.name : 'No file selected';
+    });
+
+    function checkout() {
+      const scale = document.getElementById('scaleInput').value;
+      const material = document.getElementById('materialSelect').value;
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Please upload a 3D file first.');
+        return;
+      }
+
+      const message = `File: ${file.name}\nScale: ${scale}%\nMaterial: ${material}`;
+
+      window.location.href = `mailto:theduckfrankie@gmail.com?subject=3D%20Print%20Order&body=${encodeURIComponent(message)}`;
+    }
+  </script>
+</body>
+</html>
