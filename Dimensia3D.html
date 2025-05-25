@@ -1,102 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Print Upload</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D File Viewer and Emailer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-    }
-    .upload-bar {
-      background-color: #555;
-      color: white;
-      text-align: center;
-      padding: 30px;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-    }
-    .preview, .controls {
-      background: #e0e0e0;
-      padding: 20px;
-      margin: 10px;
-      flex: 1 1 300px;
-      max-width: 400px;
-    }
-    #previewImage {
-      max-width: 100%;
-      height: auto;
-      display: none;
-    }
-    label, select, input {
-      display: block;
-      margin-top: 10px;
-    }
-    button {
+    #viewer {
+      width: 600px;
+      height: 400px;
+      background-color: #f0f0f0;
       margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #333;
-      color: white;
-      border: none;
-      cursor: pointer;
     }
-    input[type="range"] {
+    #uploadBtn {
+      background-color: #444;
+      color: white;
+      padding: 20px;
+      font-size: 20px;
+      border: none;
       width: 100%;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <form id="uploadForm">
+    <input type="file" id="fileInput" accept=".stl,.obj,.3mf" style="display:none;" />
+    <button id="uploadBtn" type="button">Click to Upload a 3D File</button>
+    <div id="viewer"></div>
+    <br />
+    <label>
+      Material: <input type="text" id="material" required />
+    </label>
+    <br />
+    <label>
+      Scale: <input type="number" id="scale" required step="any" />
+    </label>
+    <br />
+    <button type="submit">Email Details</button>
+  </form>
 
-<div class="upload-bar" onclick="document.getElementById('fileInput').click()">
-  Upload File
-</div>
-<input type="file" id="fileInput" style="display: none" accept=".stl,.obj,.3mf">
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const viewer = document.getElementById('viewer');
 
-<div class="container">
-  <div class="preview">
-    <img id="previewImage" src="/mnt/data/f9c43023-4f89-46d2-bd93-30c321419990.png" alt="3D Preview">
-  </div>
-  <div class="controls">
-    <label for="scale">Scale (50% - 200%):</label>
-    <input type="range" id="scale" name="scale" min="50" max="200" value="100">
-    <span id="scaleValue">100%</span>
+    uploadBtn.onclick = () => fileInput.click();
 
-    <label for="material">Material:</label>
-    <select id="material">
-      <option value="PLA">PLA</option>
-      <option value="ABS">ABS</option>
-      <option value="PETG">PETG</option>
-    </select>
+    let scene, camera, renderer;
+    let mesh;
 
-    <button onclick="sendEmail()">Checkout</button>
-  </div>
-</div>
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
 
-<script>
-  const scaleInput = document.getElementById('scale');
-  const scaleValue = document.getElementById('scaleValue');
-  scaleInput.addEventListener('input', () => {
-    scaleValue.textContent = scaleInput.value + '%';
-  });
+      const reader = new FileReader();
 
-  function sendEmail() {
-    const scale = document.getElementById('scale').value;
-    const material = document.getElementById('material').value;
-    const subject = encodeURIComponent('New 3D Print Order');
-    const body = encodeURIComponent(`Scale: ${scale}%\nMaterial: ${material}`);
-    const mailtoLink = `mailto:theduckfrankie@gmail.com?subject=${subject}&body=${body}`;
-    window.location.href = mailtoLink;
-  }
-</script>
+      reader.onload = function (e) {
+        if (!scene) initializeScene();
+        const contents = e.target.result;
+        const loader = new THREE.STLLoader();
+        const geometry = loader.parse(contents);
+        const material = new THREE.MeshNormalMaterial();
+        if (mesh) scene.remove(mesh);
+        mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+        animate();
+      };
 
+      reader.readAsArrayBuffer(file);
+    });
+
+    function initializeScene() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, viewer.clientWidth / viewer.clientHeight, 0.1, 1000);
+      camera.position.z = 50;
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+      viewer.innerHTML = '';
+      viewer.appendChild(renderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(1, 1, 1).normalize();
+      scene.add(light);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (mesh) mesh.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const scale = document.getElementById('scale').value;
+      const material = document.getElementById('material').value;
+      const body = `Scale: ${scale}\nMaterial: ${material}`;
+
+      try {
+        await fetch('https://formspree.io/f/xyyzzzz', { // Replace with your Formspree endpoint
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            _replyto: 'theduckfrankie@gmail.com',
+            message: body
+          })
+        });
+        alert('Email sent successfully.');
+      } catch (err) {
+        console.error('Error sending email', err);
+        alert('Failed to send email.');
+      }
+    });
+  </script>
 </body>
 </html>
