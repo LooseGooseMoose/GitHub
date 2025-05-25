@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Print Order</title>
   <style>
     body {
@@ -12,15 +12,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-    #version {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: black;
-      color: white;
-      padding: 5px 10px;
-      font-weight: bold;
     }
     #upload-label {
       background-color: #555;
@@ -39,7 +30,7 @@
     #viewer {
       width: 400px;
       height: 400px;
-      background: #ddd;
+      background: white;
       border: 1px solid #ccc;
       margin-bottom: 20px;
     }
@@ -63,8 +54,6 @@
 </head>
 <body>
 
-  <div id="version">Version 1</div>
-
   <label id="upload-label" for="file-input">Upload File</label>
   <input type="file" id="file-input" accept=".stl" />
 
@@ -86,15 +75,16 @@
     <input type="submit" value="Checkout" />
   </form>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
+  <!-- Use stable CDN from unpkg -->
+  <script src="https://unpkg.com/three@0.148.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
 
   <script>
     const fileInput = document.getElementById('file-input');
     const viewer = document.getElementById('viewer');
     const filenameField = document.getElementById('filename');
 
-    let scene, camera, renderer, controls;
+    let scene, camera, renderer;
 
     function initViewer() {
       scene = new THREE.Scene();
@@ -104,11 +94,11 @@
       viewer.innerHTML = '';
       viewer.appendChild(renderer.domElement);
 
-      camera.position.set(0, 0, 100);
+      camera.position.z = 100;
 
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(0, 0, 1);
-      scene.add(light);
+      const light1 = new THREE.DirectionalLight(0xffffff);
+      light1.position.set(0, 0, 1).normalize();
+      scene.add(light1);
 
       const ambientLight = new THREE.AmbientLight(0x404040);
       scene.add(ambientLight);
@@ -129,33 +119,22 @@
       reader.onload = function (e) {
         initViewer();
 
-        try {
-          const loader = new THREE.STLLoader();
-          const geometry = loader.parse(e.target.result);
-          const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
-          const mesh = new THREE.Mesh(geometry, material);
+        const loader = new THREE.STLLoader();
+        const geometry = loader.parse(e.target.result);
+        const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
+        const mesh = new THREE.Mesh(geometry, material);
 
-          geometry.computeBoundingBox();
-          const center = new THREE.Vector3();
-          geometry.boundingBox.getCenter(center);
-          mesh.position.sub(center); // Center the model
+        geometry.computeBoundingBox();
+        const center = new THREE.Vector3();
+        geometry.boundingBox.getCenter(center);
+        mesh.position.sub(center);
 
-          // Scale to fit if necessary
-          const size = new THREE.Vector3();
-          geometry.boundingBox.getSize(size);
-          const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 80 / maxDim;
-          mesh.scale.set(scale, scale, scale);
-
-          scene.add(mesh);
-          animate();
-        } catch (err) {
-          alert("Failed to load STL file. Please make sure it's valid.");
-          console.error(err);
-        }
+        scene.add(mesh);
+        animate();
       };
       reader.readAsArrayBuffer(file);
     });
   </script>
+
 </body>
 </html>
