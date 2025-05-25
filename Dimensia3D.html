@@ -1,1 +1,96 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Print Order</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .upload-section {
+      background-color: #555;
+      color: white;
+      padding: 40px;
+      text-align: center;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .box {
+      background-color: #ddd;
+      padding: 20px;
+      margin: 10px;
+      flex: 1;
+      min-width: 300px;
+    }
+    #preview {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<label class="upload-section" for="fileUpload">Upload 3D File</label>
+<input type="file" id="fileUpload" accept=".stl,.obj,.3mf" style="display: none;">
+
+<div class="container">
+  <div class="box">
+    <img id="preview" src="" alt="3D File Preview" style="display:none;">
+  </div>
+
+  <div class="box">
+    <label for="scale">Scale (%):</label>
+    <input type="number" id="scale" value="100" min="1"><br><br>
+
+    <label for="material">Material:</label>
+    <select id="material">
+      <option value="PLA">PLA</option>
+      <option value="ABS">ABS</option>
+      <option value="PETG">PETG</option>
+    </select>
+  </div>
+
+  <div class="box">
+    <button onclick="sendEmail()">Checkout</button>
+  </div>
+</div>
+
+<script>
+  document.getElementById('fileUpload').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const preview = document.getElementById('preview');
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
+  });
+
+  function sendEmail() {
+    const scale = document.getElementById('scale').value;
+    const material = document.getElementById('material').value;
+    const subject = encodeURIComponent('3D Print Order');
+    const body = encodeURIComponent(`Scale: ${scale}%\nMaterial: ${material}`);
+    const mailtoLink = `mailto:theduckfrankie@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = mailtoLink;
+  }
+</script>
+
+</body>
+</html>
