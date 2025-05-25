@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">s
+<head>
+  <meta charset="UTF-8">
+  <title>File Explorer Button</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      text-align: center;
+      background-color: rgb(190, 27, 27);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    #uploadBtn {
+      padding: 15px 30px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #uploadBtn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Open File Explorer</h1>
+    <input type="file" id="fileInput" style="display: none;">
+    <button id="uploadBtn">Choose File</button>
+  </div>
+
+  <script>
+    document.getElementById('uploadBtn').addEventListener('click', function() {
+      document.getElementById('fileInput').click();
+    });
+  </script>
+</body>
+</html>
