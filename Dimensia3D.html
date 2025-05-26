@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Print Order</title>
   <style>
     body {
@@ -50,11 +50,6 @@
       border: none;
       cursor: pointer;
     }
-    footer {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #666;
-    }
   </style>
 </head>
 <body>
@@ -75,26 +70,10 @@
       <option value="PETG">PETG</option>
     </select>
 
-    <label for="color">Color</label>
-    <select name="color" id="color">
-      <option value="Black">Black</option>
-      <option value="White">White</option>
-      <option value="Red">Red</option>
-      <option value="Blue">Blue</option>
-      <option value="Green">Green</option>
-    </select>
-
-    <label for="notes">Notes</label>
-    <textarea name="notes" id="notes" rows="3"></textarea>
-
     <input type="hidden" name="filename" id="filename" />
 
     <input type="submit" value="Checkout" />
   </form>
-
-  <footer>
-    Version 1.0.0
-  </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
@@ -103,7 +82,7 @@
     const viewer = document.getElementById('viewer');
     const filenameField = document.getElementById('filename');
 
-    let scene, camera, renderer, mesh;
+    let scene, camera, renderer, controls;
 
     const initViewer = () => {
       scene = new THREE.Scene();
@@ -125,9 +104,6 @@
 
     const animate = () => {
       requestAnimationFrame(animate);
-      if (mesh) {
-        mesh.rotation.y += 0.01;
-      }
       renderer.render(scene, camera);
     };
 
@@ -144,7 +120,7 @@
         const loader = new THREE.STLLoader();
         const geometry = loader.parse(e.target.result);
         const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
-        mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, material);
 
         geometry.computeBoundingBox();
         const center = new THREE.Vector3();
