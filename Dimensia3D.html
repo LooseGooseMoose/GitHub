@@ -72,9 +72,6 @@
 
     <input type="hidden" name="filename" id="filename" />
 
-    <label for="email">Email</label>
-    <input type="email" name="email" id="email" required placeholder="you@example.com" />
-
     <input type="submit" value="Checkout" />
   </form>
 
@@ -85,7 +82,7 @@
     const viewer = document.getElementById('viewer');
     const filenameField = document.getElementById('filename');
 
-    let scene, camera, renderer;
+    let scene, camera, renderer, controls;
 
     const initViewer = () => {
       scene = new THREE.Scene();
