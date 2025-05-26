@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Print Order</title>
   <style>
     body {
@@ -13,7 +13,6 @@
       flex-direction: column;
       align-items: center;
     }
-
     #upload-label {
       background-color: #555;
       color: white;
@@ -25,11 +24,9 @@
       cursor: pointer;
       margin-bottom: 20px;
     }
-
     input[type="file"] {
       display: none;
     }
-
     #viewer {
       width: 400px;
       height: 400px;
@@ -37,35 +34,18 @@
       border: 1px solid #ccc;
       margin-bottom: 20px;
     }
-
     form {
       display: flex;
       flex-direction: column;
       gap: 10px;
       width: 300px;
     }
-
     label {
       font-weight: bold;
     }
-
     input[type="submit"] {
       padding: 10px;
       background: #333;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .button-group button {
-      padding: 10px 20px;
-      background: #0077ff;
       color: white;
       border: none;
       cursor: pointer;
@@ -74,17 +54,10 @@
 </head>
 <body>
 
-  <label id="upload-label" for="file-input">Upload 3D File</label>
+  <label id="upload-label" for="file-input">Upload File</label>
   <input type="file" id="file-input" accept=".stl,.obj,.3mf" />
 
   <div id="viewer"></div>
-
-  <!-- Restored Buttons -->
-  <div class="button-group">
-    <button onclick="alert('Help Info')">Help</button>
-    <button onclick="alert('Pricing Info')">Pricing</button>
-    <button onclick="alert('Materials Guide')">Materials</button>
-  </div>
 
   <form action="https://formspree.io/f/mrbqwlgn" method="POST">
     <label for="scale">Scale (%)</label>
@@ -98,19 +71,21 @@
     </select>
 
     <input type="hidden" name="filename" id="filename" />
+
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" required placeholder="you@example.com" />
+
     <input type="submit" value="Checkout" />
   </form>
 
-  <!-- 3D Viewer Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
-
   <script>
     const fileInput = document.getElementById('file-input');
     const viewer = document.getElementById('viewer');
     const filenameField = document.getElementById('filename');
 
-    let scene, camera, renderer, mesh;
+    let scene, camera, renderer;
 
     const initViewer = () => {
       scene = new THREE.Scene();
@@ -122,7 +97,7 @@
 
       camera.position.z = 100;
 
-      const light1 = new THREE.DirectionalLight(0xffffff, 0.8);
+      const light1 = new THREE.DirectionalLight(0xffffff);
       light1.position.set(0, 0, 1).normalize();
       scene.add(light1);
 
@@ -132,10 +107,6 @@
 
     const animate = () => {
       requestAnimationFrame(animate);
-      if (mesh) {
-        mesh.rotation.x += 0.01;
-        mesh.rotation.y += 0.01;
-      }
       renderer.render(scene, camera);
     };
 
@@ -152,7 +123,7 @@
         const loader = new THREE.STLLoader();
         const geometry = loader.parse(e.target.result);
         const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
-        mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, material);
 
         geometry.computeBoundingBox();
         const center = new THREE.Vector3();
