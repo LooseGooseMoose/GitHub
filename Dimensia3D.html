@@ -1,124 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>3D Viewer Version 2</title>
-<style>
-  body {
-    margin: 0; 
-    font-family: Arial, sans-serif;
-    background: #eee;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-  }
-  #version {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background: #222;
-    color: #0f0;
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 16px;
-    z-index: 10;
-    user-select: none;
-  }
-  #upload-label {
-    margin-top: 60px;
-    background-color: #0077ff;
-    color: white;
-    padding: 15px 30px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 18px;
-  }
-  input[type="file"] {
-    display: none;
-  }
-  #viewer {
-    width: 600px;
-    height: 600px;
-    margin-top: 30px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 0 10px #0003;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D Print Order Version 3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eee;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+    }
+    #version {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #222;
+      color: #0f0;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 16px;
+      z-index: 1000;
+      user-select: none;
+    }
+    #upload-label {
+      background-color: #0077ff;
+      color: white;
+      font-size: 24px;
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+      max-width: 800px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    #viewer {
+      width: 400px;
+      height: 400px;
+      background: white;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #0003;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 300px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="number"], select {
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    input[type="submit"] {
+      padding: 10px;
+      background: #0077ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 
-<div id="version">Version 2</div>
+  <div id="version">Version 3</div>
 
-<label id="upload-label" for="file-input">Upload STL File</label>
-<input type="file" id="file-input" accept=".stl" />
+  <label id="upload-label" for="file-input">Upload File</label>
+  <input type="file" id="file-input" accept=".stl,.obj,.3mf" />
 
-<div id="viewer"></div>
+  <div id="viewer"></div>
 
-<script src="https://unpkg.com/three@0.148.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
+  <form action="https://formspree.io/f/mrbqwlgn" method="POST">
+    <label for="scale">Scale (%)</label>
+    <input type="number" name="scale" id="scale" min="1" max="1000" required />
 
-<script>
-  const viewer = document.getElementById('viewer');
-  const fileInput = document.getElementById('file-input');
+    <label for="material">Material</label>
+    <select name="material" id="material">
+      <option value="PLA">PLA</option>
+      <option value="ABS">ABS</option>
+      <option value="PETG">PETG</option>
+    </select>
 
-  let scene, camera, renderer, mesh;
+    <input type="hidden" name="filename" id="filename" />
 
-  function initViewer() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, viewer.clientWidth / viewer.clientHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(viewer.clientWidth, viewer.clientHeight);
-    viewer.innerHTML = ''; // Clear previous
-    viewer.appendChild(renderer.domElement);
+    <input type="submit" value="Checkout" />
+  </form>
 
-    camera.position.z = 100;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/STLLoader.js"></script>
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const viewer = document.getElementById('viewer');
+    const filenameField = document.getElementById('filename');
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(0, 0, 1).normalize();
-    scene.add(dirLight);
+    let scene, camera, renderer;
 
-    const ambientLight = new THREE.AmbientLight(0x404040);
-    scene.add(ambientLight);
-  }
+    function initViewer() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, viewer.clientWidth / viewer.clientHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+      viewer.innerHTML = '';
+      viewer.appendChild(renderer.domElement);
 
-  function animate() {
-    requestAnimationFrame(animate);
-    if (mesh) {
-      mesh.rotation.y += 0.01;
-      mesh.rotation.x += 0.005;
+      camera.position.z = 100;
+
+      const light1 = new THREE.DirectionalLight(0xffffff);
+      light1.position.set(0, 0, 1).normalize();
+      scene.add(light1);
+
+      const ambientLight = new THREE.AmbientLight(0x404040);
+      scene.add(ambientLight);
     }
-    renderer.render(scene, camera);
-  }
 
-  fileInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      initViewer();
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-      const loader = new THREE.STLLoader();
-      const geometry = loader.parse(e.target.result);
-      const material = new THREE.MeshPhongMaterial({ color: 0x0077ff, specular: 0x111111, shininess: 200 });
-      mesh = new THREE.Mesh(geometry, material);
+      filenameField.value = file.name;
 
-      geometry.computeBoundingBox();
-      const center = new THREE.Vector3();
-      geometry.boundingBox.getCenter(center);
-      mesh.position.sub(center);
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        initViewer();
 
-      scene.add(mesh);
-      animate();
-    };
-    reader.readAsArrayBuffer(file);
-  });
-</script>
+        const loader = new THREE.STLLoader();
+        const geometry = loader.parse(e.target.result);
+        const material = new THREE.MeshPhongMaterial({ color: 0x0077ff });
+        const mesh = new THREE.Mesh(geometry, material);
 
+        geometry.computeBoundingBox();
+        const center = new THREE.Vector3();
+        geometry.boundingBox.getCenter(center);
+        mesh.position.sub(center);
+
+        scene.add(mesh);
+        animate();
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  </script>
 </body>
 </html>
